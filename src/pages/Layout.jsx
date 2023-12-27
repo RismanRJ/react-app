@@ -1,40 +1,51 @@
 import { Box, Flex } from "@chakra-ui/react";
-import React, { useEffect } from "react";
+import React, { useContext } from "react";
 
 import Sidebar from "../components/Sidebar";
-import { useLocation, useNavigate } from "react-router-dom";
-import Login from "./Login";
+import { useLocation } from "react-router-dom";
+
 import Navbar from "../components/Navbar";
-import { auth, firestore } from "../../firebase/firebase";
+import { DataProvider } from "../context/DataContext";
+import Footer from "../components/Footer";
 
 const Layout = ({ children }) => {
   const { pathname } = useLocation();
 
-  const navigate = useNavigate();
-
   return (
     <>
-      <Flex>
-        {pathname !== "/auth" &&
-        pathname !== "/forgotpassword" &&
-        pathname !== "/signup" ? (
-          <>
-            <Sidebar />
-          </>
-        ) : null}
-        <Box
-          flex={1}
-          h={"auto"}
-          w={{ base: "calc(100%-50px)", md: "calc(100%-200px) " }}
-        >
-          {pathname == "/auth" ||
-          pathname == "/forgotpassword" ||
-          pathname == "/signup" ? null : (
-            <Navbar />
-          )}
-          {children}
-        </Box>
-      </Flex>
+      <DataProvider>
+        <Flex>
+          {pathname !== "/auth" &&
+          pathname !== "/forgotscreen" &&
+          pathname !== "/signup" ? (
+            <>
+              <Sidebar />
+            </>
+          ) : null}
+          <Box
+            flex={1}
+            h={"100vh"}
+            w={{ base: "calc(100%-50px)", md: "calc(100%-200px) " }}
+            zIndex={50}
+          >
+            {pathname == "/auth" ||
+            pathname == "/forgotscreen" ||
+            pathname == "/signup" ? null : (
+              <>
+                <Navbar />
+              </>
+            )}
+            {children}
+            {pathname == "/auth" ||
+            pathname == "/forgotscreen" ||
+            pathname == "/signup" ? null : (
+              <>
+                <Footer />
+              </>
+            )}
+          </Box>
+        </Flex>
+      </DataProvider>
     </>
   );
 };

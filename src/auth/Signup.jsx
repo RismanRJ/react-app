@@ -4,7 +4,8 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { auth, db } from "../../firebase/firebase";
 import { createUserWithEmailAndPassword } from "firebase/auth";
-import { ref, set } from "firebase/database";
+import { onValue, ref, set } from "firebase/database";
+import useAuthStore from "../store/authStore";
 
 const Signup = () => {
   const [isLoading, setloading] = useState(false);
@@ -15,6 +16,7 @@ const Signup = () => {
   const navigate = useNavigate();
   const [show, setshow] = useState(false);
   const [loginstatus, setloginStatus] = useState(false);
+  const signupuser = useAuthStore((state) => state.login);
   const handlecreateUser = async () => {
     setloading(true);
     if (!email || !password || !firstname || !Lastname) {
@@ -34,6 +36,18 @@ const Signup = () => {
           Lastname: Lastname,
           email: email,
         });
+        signupuser(user.user.uid);
+        localStorage.setItem("user", JSON.stringify({ uid: user.user.uid }));
+
+        const query = ref(db, `users/${user.user.uid}`);
+        onValue(query, (snapshot) => {
+          const data = snapshot.val();
+          localStorage.setItem(
+            "Data",
+            JSON.stringify({ ...data, id: user.user.uid })
+          );
+        });
+
         setloading(false);
         setTimeout(() => {
           navigate("/");
@@ -59,7 +73,7 @@ const Signup = () => {
         >
           <Flex align={"baseline"}>
             <div className="fa fa-home" style={{ fontSize: "2rem" }}></div>
-            <p style={{ fontSize: "1.3rem" }}>Docore</p>
+            <p style={{ fontSize: "1.3rem" }}>Shopify</p>
           </Flex>
           <h3>Hello Sir!!</h3>
           <form>

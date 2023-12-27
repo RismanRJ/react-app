@@ -1,22 +1,12 @@
 import { Box, Flex } from "@chakra-ui/layout";
-import {
-  Alert,
-  AlertDescription,
-  AlertIcon,
-  AlertTitle,
-  Button,
-  Image,
-  Input,
-} from "@chakra-ui/react";
-import {
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-} from "firebase/auth";
-import { React, useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { auth, db, firestore } from "../../firebase/firebase";
-import { addDoc, collection } from "firebase/firestore";
-import { ref } from "firebase/database";
+import { Alert, AlertIcon, Button, Image, Input } from "@chakra-ui/react";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { React, useState } from "react";
+import { Link, Navigate, useNavigate } from "react-router-dom";
+import { auth, db } from "../../firebase/firebase";
+
+import { onValue, ref } from "firebase/database";
+import useAuthStore from "../store/authStore";
 
 const Login = () => {
   const [isLoading, setloading] = useState(false);
@@ -24,19 +14,9 @@ const Login = () => {
   const [loginstatus, setloginStatus] = useState(false);
   const [email, setemail] = useState("");
   const [password, setpassword] = useState("");
-  const [user, setUset] = useState();
+  const [error, seterror] = useState("");
   const navigate = useNavigate();
-
-  const id = auth.currentUser;
-  useEffect(() => {
-    return auth.onAuthStateChanged((user) => {
-      if (user) {
-        navigate("/");
-      } else {
-        navigate("/auth");
-      }
-    });
-  }, [id]);
+  const loginuser = useAuthStore((state) => state.login);
 
   const handlesignin = async (e) => {
     e.preventDefault();
@@ -55,16 +35,28 @@ const Login = () => {
       const user = await signInWithEmailAndPassword(auth, email, password);
       if (user.user.uid) {
         setloginStatus(true);
-        setloading(false);
 
-        setTimeout(() => {
-          navigate("/");
-        }, 1000);
+        localStorage.setItem("user", JSON.stringify({ uid: user.user.uid }));
+
+        const query = ref(db, `users/${user.user.uid}`);
+        onValue(query, (snapshot) => {
+          const data = snapshot.val();
+          localStorage.setItem(
+            "Data",
+            JSON.stringify({ ...data, id: user.user.uid })
+          );
+
+          localStorage.getItem("Data") ? loginuser(user.user.uid) : null;
+
+          setloading(false);
+        });
+
         console.log("sign in successfully");
       }
     } catch (e) {
       setloading(false);
-      console.log(e);
+      seterror(e.message.toString());
+      console.log(e.message, error.toString());
     }
   };
   return (
@@ -80,7 +72,7 @@ const Login = () => {
         >
           <Flex align={"baseline"}>
             <div className="fa fa-home" style={{ fontSize: "2rem" }}></div>
-            <p style={{ fontSize: "1.3rem" }}>Docore</p>
+            <p style={{ fontSize: "1.3rem" }}>Shopify</p>
           </Flex>
           <h3>Welcome Back!!</h3>
           <form>
@@ -111,9 +103,20 @@ const Login = () => {
                   Please fill the Password field
                 </Flex>
               </Alert>
-              <Flex justify={"space-between"}>
+              <Flex
+                justify={"space-between"}
+                direction={{ base: "column", md: "row" }}
+              >
                 <Link to={"/signup"}>Don't have an Account?</Link>
-                <Link to={"/forgotpassword"}>Forgot Password?</Link>
+                <Link
+                  style={{
+                    alignSelf: "flex-end",
+                  }}
+                  to={"/forgotscreen"}
+                  onClick={() => Navigate("/forgotpassword")}
+                >
+                  Forgot Password?
+                </Link>
               </Flex>
               <Button
                 display={"block"}
@@ -136,6 +139,12 @@ const Login = () => {
               <Flex>
                 <AlertIcon />
                 Login Successfully
+              </Flex>
+            </Alert>
+            <Alert status="error" my={5} display={error ? "block" : "none"}>
+              <Flex>
+                <AlertIcon />
+                {error}
               </Flex>
             </Alert>
           </form>

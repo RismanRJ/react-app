@@ -1,16 +1,16 @@
 import { Box, Flex } from "@chakra-ui/layout";
-import { Button, Input, Image, Alert, AlertIcon } from "@chakra-ui/react";
+import { Alert, AlertIcon, Button, Image, Input } from "@chakra-ui/react";
 import { sendPasswordResetEmail } from "firebase/auth";
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { auth } from "../../firebase/firebase";
 
-const ForgotPassword = () => {
-  const [error, setError] = useState("");
+const Forgotscreen = () => {
   const [email, setEmail] = useState("");
   const [show, setshow] = useState(false);
-  const [loginstatus, setloginStatus] = useState(false);
   const [isLoading, setloading] = useState(false);
+  const [loginstatus, setloginStatus] = useState(false);
+
   const handlereset = async (e) => {
     e.preventDefault();
     setloading(true);
@@ -47,7 +47,7 @@ const ForgotPassword = () => {
         >
           <Flex align={"baseline"}>
             <div className="fa fa-home" style={{ fontSize: "2rem" }}></div>
-            <p style={{ fontSize: "1.3rem" }}>Docore</p>
+            <p style={{ fontSize: "1.3rem" }}>Shopify</p>
           </Flex>
           <h3>Welcome Back!!</h3>
           <form>
@@ -116,4 +116,4 @@ const ForgotPassword = () => {
   );
 };
 
-export default ForgotPassword;
+export default Forgotscreen;
